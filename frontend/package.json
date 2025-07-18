@@ -1,0 +1,50 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "cp ../.env .env && vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "generate:api": "orval --config src/api/orval.config.ts"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.1.1",
+    "@mui/icons-material": "^7.2.0",
+    "@mui/material": "^7.2.0",
+    "@mui/system": "^7.2.0",
+    "@mui/x-date-pickers": "^8.6.0",
+    "@tanstack/react-query": "^5.81.5",
+    "@tanstack/react-router": "^1.124.0",
+    "@tanstack/router-plugin": "^1.124.0",
+    "@vitejs/plugin-basic-ssl": "^2.1.0",
+    "axios": "^1.10.0",
+    "dayjs": "^1.11.13",
+    "dotenv": "^17.0.1",
+    "jwt-decode": "^4.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.59.0",
+    "yup": "^1.6.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@tanstack/router-cli": "^1.125.4",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.2.0",
+    "orval": "^7.10.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.8.3",
+    "typescript-eslint": "^8.34.1",
+    "vite": "^7.0.0"
+  }
+}
