@@ -24,7 +24,7 @@ import type {
 import { customInstance } from "../api-config";
 
 /**
- * OAuth2 compatible token login, get an access token for future requests
+ * Login with OAuth2 credentials. Returns access token in JSON and refresh token in HttpOnly cookie.
  * @summary Login
  */
 export const login = (bodyLogin: BodyLogin, signal?: AbortSignal) => {
@@ -202,6 +202,84 @@ export const useRegisterUser = <
   TContext
 > => {
   const mutationOptions = getRegisterUserMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+/**
+ * @summary Refresh Token
+ */
+export const refreshToken = (signal?: AbortSignal) => {
+  return customInstance<Token>({
+    url: `/api/v1/auth/refresh`,
+    method: "POST",
+    signal,
+  });
+};
+
+export const getRefreshTokenMutationOptions = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof refreshToken>>,
+    TError,
+    void,
+    TContext
+  >;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof refreshToken>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["refreshToken"];
+  const { mutation: mutationOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey } };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof refreshToken>>,
+    void
+  > = () => {
+    return refreshToken();
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RefreshTokenMutationResult = NonNullable<
+  Awaited<ReturnType<typeof refreshToken>>
+>;
+
+export type RefreshTokenMutationError = HTTPValidationError;
+
+/**
+ * @summary Refresh Token
+ */
+export const useRefreshToken = <
+  TError = HTTPValidationError,
+  TContext = unknown,
+>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof refreshToken>>,
+      TError,
+      void,
+      TContext
+    >;
+  },
+  queryClient?: QueryClient,
+): UseMutationResult<
+  Awaited<ReturnType<typeof refreshToken>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationOptions = getRefreshTokenMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
