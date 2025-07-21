@@ -43,7 +43,7 @@ async def login(
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        httponly=False, # for now
+        httponly=True, # for now
         secure=False,  # True in production
         samesite="Lax",
         domain="localhost",

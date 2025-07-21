@@ -5,21 +5,24 @@ type DecodedToken = {
   exp: number;
 };
 
-export const storeTokensLocally = (token: { access_token: string; token_type: string }) => {
-  if (token?.access_token) {
-    localStorage.setItem("access_token", token.access_token);
-    localStorage.setItem("token_type", token.token_type ?? "bearer");
-  } else {
-    console.warn("Invalid token response:", token);
-  }
+// In-memory access token storage 
+let accessToken: string | null = null;
+
+export const setAccessToken = (token: string) => {
+  accessToken = token;
+};
+
+export const getAccessToken = () => accessToken;
+
+export const clearAccessToken = () => {
+  accessToken = null;
 };
 
 export const getCurrentUserId = (): string | null => {
-  const token = localStorage.getItem("access_token");
-  if (!token) return null;
+  if (!accessToken) return null;
 
   try {
-    const decoded = jwtDecode<DecodedToken>(token);
+    const decoded = jwtDecode<DecodedToken>(accessToken);
     return decoded.sub;
   } catch (err) {
     console.error("Invalid token", err);
@@ -27,12 +30,10 @@ export const getCurrentUserId = (): string | null => {
   }
 };
 
-export const isLoggedIn = () => {
-  return getCurrentUserId() !== null && !isTokenExpired();
-};
+
 
 export const isTokenExpired = (): boolean => {
-  const token = localStorage.getItem("access_token");
+   const token = accessToken || localStorage.getItem("access_token");
   if (!token) return true;
 
   try {
@@ -43,8 +44,13 @@ export const isTokenExpired = (): boolean => {
   }
 };
 
+
+export const isLoggedIn = () => {
+  return getCurrentUserId() !== null && !isTokenExpired();
+};
+
+
 export const clearAuth = () => {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("token_type");
+  clearAccessToken();
 };
 

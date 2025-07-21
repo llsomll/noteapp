@@ -2,10 +2,11 @@ import React, { createContext, useState, useEffect } from 'react'
 import {
   isLoggedIn,
   getCurrentUserId,
-  storeTokensLocally,
-  clearAuth
+  clearAuth,
+  setAccessToken,
+  clearAccessToken
 } from '../utils/auth'
-import { refreshToken }
+import { getCurrentUser, refreshToken } from '../api/api-client'
 
 export interface AuthContextType  {
   isAuthenticated: boolean
@@ -20,19 +21,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [userId, setUserId] = useState<string | null>(getCurrentUserId())
   const [isAuthenticated, setIsAuthenticated] = useState(isLoggedIn())
 
-useEffect(() => {
+  useEffect(() => {
     const tryRefresh = async () => {
       try {
-        const res = await refreshToken(); // this sends the cookie
+        const res = await refreshToken(); // includes refresh_token cookie
         setAccessToken(res.access_token);
         setIsAuthenticated(true);
 
-        // Fetch user info (you may need to call /user/me or decode token)
-        const user = await getCurrentUser();
+        const user = await getCurrentUser(); // protected route
         setUserId(user.id);
-      } catch {
+      } catch (err) {
+        console.error("Token refresh failed:", err);
         setIsAuthenticated(false);
         setUserId(null);
+        clearAccessToken();
       }
     };
 
@@ -40,7 +42,7 @@ useEffect(() => {
   }, []);
 
   const login = (token: { access_token: string; token_type: string }) => {
-    storeTokensLocally(token)
+    setAccessToken(token.access_token);
     setIsAuthenticated(true)
     setUserId(getCurrentUserId())
   }
