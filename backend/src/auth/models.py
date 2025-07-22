@@ -9,6 +9,8 @@ class Token(PydanticBase):
 # Contents of JWT token
 class TokenPayload(PydanticBase):
     sub: str | None = None
+    exp: int | None = None       # Optional expiration timestamp
+    token_type: str | None = None  # "access" or "refresh"
 
 
 

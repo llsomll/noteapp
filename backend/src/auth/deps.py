@@ -21,17 +21,18 @@ async def get_current_user(db: DbContext, token: TokenDep) -> User:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[ALGORITHM])
         token_data = TokenPayload(**payload)
 
-        if token_data.sub is None:
+        if token_data.sub is None or token_data.token_type != "access":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Invalid token payload",
-        )
+                detail="Invalid token",
+            )
     
     except (JWTClaimsError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
+    
     user = await db.get(User, token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")

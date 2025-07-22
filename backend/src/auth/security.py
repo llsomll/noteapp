@@ -13,15 +13,30 @@ ALGORITHM = "HS256"
 
 def create_access_token(subject: str | Any, expires_delta: timedelta) -> str:
     expire = datetime.now(timezone.utc) + expires_delta
-    to_encode = {"exp": expire, "sub": str(subject)}
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    to_encode = {
+        "exp": expire,
+        "sub": str(subject),
+        "token_type": "access"
+    }
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
 
-# def create_refresh_token(subject: str | Any, expires_delta: timedelta = timedelta(days=7)) -> str:
-#     expire = datetime.now(timezone.utc) + expires_delta
-#     to_encode = {"exp": expire, "sub": str(subject)}
-#     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=ALGORITHM)
-#     return encoded_jwt
+def create_refresh_token(subject: str | Any, expires_delta: timedelta = timedelta(days=7)) -> str:
+    expire = datetime.now(timezone.utc) + expires_delta
+    to_encode = {
+        "exp": expire,
+        "sub": str(subject),
+        "token_type": "refresh"
+    }
+    return jwt.encode(to_encode, settings.REFRESH_SECRET_KEY, algorithm=ALGORITHM)
+
+def decode_refresh_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, settings.REFRESH_SECRET_KEY, algorithms=["HS256"])
+        if payload.get("token_type") != "refresh":
+            raise JWTError("Invalid token type")
+        return payload
+    except JWTError as e:
+        raise ValueError("Invalid refresh token") from e
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
