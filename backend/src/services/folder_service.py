@@ -53,7 +53,7 @@ class FolderService:
         Only fields explicitly provided will be updated.
         """        
         folder = await self.get_folder(folder_id, user)
-        for field, value in update_data.model_dump(exclude_unser=True).items():
+        for field, value in update_data.model_dump(exclude_unset=True).items():
             setattr(folder, field, value)
         await self.db.commit()
         await self.db.refresh(folder)
