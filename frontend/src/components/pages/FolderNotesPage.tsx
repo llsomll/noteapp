@@ -36,7 +36,7 @@ export default function FolderNotesPage() {
         return map;
     }, {} as Record<string, string>) || {};
 
-    const handleDelete = (noteId: string) => {
+    const handleDeleteNote = (noteId: string) => {
         deleteNoteMutation.mutate({ noteId });
     };
 
@@ -70,7 +70,11 @@ export default function FolderNotesPage() {
                     {filteredNotes.map(note => (
                         <Grid key={note.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
                             <NoteCard
-                                note={note}
+                                note={{
+                                    ...note,
+                                    content: note.content ?? '',
+                                    title: note.title ?? '',
+                                }}
                                 onClick={() =>
                                     router.navigate({
                                         to: '/note/$noteId',
@@ -83,7 +87,7 @@ export default function FolderNotesPage() {
                                         data: { ...note, is_starred: !note.is_starred },
                                     })
                                 }
-                                onDelete={() => handleDelete(note.id)}
+                                onDelete={() => handleDeleteNote(note.id)}
                                 onEdit={() => {
                                     setNoteToEdit(note);
                                     setDialogOpen(true);
@@ -107,7 +111,16 @@ export default function FolderNotesPage() {
                 folders={folders}
                 foldersLoading={foldersLoading}
                 foldersError={foldersError}
-                initialData={noteToEdit}
+                initialData={
+                    noteToEdit
+                        ? {
+                            id: noteToEdit.id,
+                            title: noteToEdit.title ?? '',
+                            content: noteToEdit.content ?? '',
+                            folder_id: noteToEdit.folder_id ?? '',
+                        }
+                        : null
+                }
             />
         </Box>
     );

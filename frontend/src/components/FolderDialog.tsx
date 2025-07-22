@@ -8,21 +8,21 @@ type FolderFormProps = {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: { name: string }) => void;
-  initialName?: string;
+  initialValues?: { id: string; name: string } | null;
 };
 
 export default function FolderDialog({
   open,
   onClose,
   onSubmit,
-  initialName = '',
+  initialValues,
 }: FolderFormProps) {
   const [name, setName] = useState('');
 
 
   useEffect(() => {
-    setName(initialName);
-  }, [initialName, open]);
+    setName(initialValues?.name || '');
+  }, [initialValues, open]);
 
   const handleSubmit = () => {
     if (!name.trim()) return;
@@ -32,7 +32,7 @@ export default function FolderDialog({
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="xs">
-      <DialogTitle>Add Folder</DialogTitle>
+      <DialogTitle>{initialValues ? 'Edit Folder' : 'Add Folder'}</DialogTitle>
       <DialogContent>
         <TextField
           label="Folder Name"
@@ -44,7 +44,9 @@ export default function FolderDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit}>Add</Button>
+        <Button variant="contained" onClick={handleSubmit}>
+          {initialValues ? 'Update' : 'Add'}
+        </Button>
       </DialogActions>
     </Dialog>
   );

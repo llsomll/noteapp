@@ -1,15 +1,21 @@
 import React, { useState } from 'react'
-import { Box, Typography, useTheme, Fab } from '@mui/material'
+import { Box, Typography, useTheme, Fab, IconButton } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
-import { useCreateFolder, useGetFolders, useGetNotes } from '../../api/api-client'
+import { useGetFolders, useGetNotes } from '../../api/api-client'
+import { useFolder } from '../../hooks/useFolder';
 import FolderDialog from '../FolderDialog'
-import { useQueryClient } from '@tanstack/react-query'
 import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function FoldersPage() {
     const { palette } = useTheme();
-    const queryClient = useQueryClient();
     const navigate = useNavigate();
+
+    const [openDialog, setOpenDialog] = useState(false);
+    const [editingFolder, setEditingFolder] = useState<{ id: string; name: string } | null>(null);
+    const isDialogOpen = openDialog || editingFolder !== null;
+
     const {
         data: folders = [],
         isLoading,
@@ -17,9 +23,7 @@ export default function FoldersPage() {
     } = useGetFolders();
     const { data: notes = [] } = useGetNotes();
 
-    const [openDialog, setOpenDialog] = useState(false);
-
-
+    const { createFolderMutation, updateFolderMutation, deleteFolderMutation } = useFolder();
 
     const colors = ['#FFAB91', '#FFF59D', '#C5CAE9', '#90CAF9', '#B2DFDB'];
     const bgColors = ['#FF7043', '#FDD835', '#7986CB', '#64B5F6', '#4DB6AC'];
@@ -33,21 +37,18 @@ export default function FoldersPage() {
     }, {} as Record<string, number>);
 
 
-    const createFolderMutation = useCreateFolder({
-        mutation: {
-            onSuccess: () => {
-                queryClient.invalidateQueries({ queryKey: ['/api/v1/folder/'] });
-            },
-            onError: (error) => {
-                console.error('Failed to create folder', error);
-            },
-        },
-    });
-
-
     const handleCreateFolder = (data: { name: string }) => {
         createFolderMutation.mutate({ data });
     };
+
+    const handleEditFolder = (id: string, name: string) => {
+        updateFolderMutation.mutate({ folderId: id, data: { name } });
+    };
+
+    const handleDeleteFolder = (id: string) => {
+        deleteFolderMutation.mutate({ folderId: id });
+    };
+
 
     return (
         <Box p={3}>
@@ -83,8 +84,8 @@ export default function FoldersPage() {
                                 navigate({ to: '/folder/$folderId', params: { folderId: folder.id } })
                             }
                             sx={{
-                                width: 150,
-                                height: 110,
+                                width: 200,
+                                height: 150,
                                 position: 'relative',
                                 cursor: 'pointer',
                                 perspective: 1000,
@@ -133,6 +134,32 @@ export default function FoldersPage() {
                                     {folder.name} ({noteCountMap[folder.id] || 0})
                                 </Typography>
                             </Box>
+
+                            {/* Edit/Delete icons */}
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    top:110,
+                                    right: 1,
+                                    zIndex: 4,
+                                    display: 'flex',
+                                }}>
+                                <IconButton onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (confirm(`Delete folder "${folder.name}"?`)) {
+                                        handleDeleteFolder(folder.id);
+                                    }
+                                }}>
+                                    <DeleteIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingFolder({ id: folder.id, name: folder.name });
+                                }}>
+                                    <EditIcon fontSize="small" />
+                                </IconButton>
+                            </Box>
+
                         </Box>
                     )
                 })}
@@ -155,9 +182,22 @@ export default function FoldersPage() {
             </Fab>
 
             <FolderDialog
-                open={openDialog}
-                onClose={() => setOpenDialog(false)}
-                onSubmit={handleCreateFolder}
+                key={editingFolder?.id || 'new'}
+                open={isDialogOpen}
+                onClose={() => {
+                    setOpenDialog(false);
+                    setEditingFolder(null);
+                }}
+                onSubmit={(data) => {
+                    if (editingFolder) {
+                        handleEditFolder(editingFolder.id, data.name);
+                        setEditingFolder(null);
+                    } else {
+                        handleCreateFolder(data);
+                    }
+                    setOpenDialog(false);
+                }}
+                initialValues={editingFolder}
             />
 
         </Box>
