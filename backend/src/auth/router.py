@@ -43,11 +43,26 @@ async def login(
     response.set_cookie(
         key="refresh_token",
         value=refresh_token,
-        httponly=True, # for now
+        httponly=True, 
         secure=False,  # True in production
         samesite="Lax",
         domain="localhost",
         max_age=settings.REFRESH_TOKEN_EXPIRE_DAYS * 86400
+    )
+
+    return response
+
+
+@router.post("/logout", operation_id="logout")
+async def logout():
+    response = JSONResponse(content={"detail": "Logged out"})
+    response.delete_cookie(
+        key="refresh_token",
+        httponly=True, 
+        secure=False,  # True in production
+        samesite="Lax",
+        domain="localhost",
+        path="/",
     )
 
     return response

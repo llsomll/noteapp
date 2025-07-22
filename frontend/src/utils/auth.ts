@@ -1,23 +1,27 @@
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; //to decode JWTs and access their payload
 
 type DecodedToken = {
   sub: string; // user ID
-  exp: number;
+  exp: number; // Expiration time
 };
 
 // In-memory access token storage 
 let accessToken: string | null = null;
 
+// Store the access token in memory
 export const setAccessToken = (token: string) => {
   accessToken = token;
 };
 
+// Retrieve the current access token from memory
 export const getAccessToken = () => accessToken;
 
+// Clear the stored access token
 export const clearAccessToken = () => {
   accessToken = null;
 };
 
+// Extract the user ID from the access token
 export const getCurrentUserId = (): string | null => {
   if (!accessToken) return null;
 
@@ -31,14 +35,14 @@ export const getCurrentUserId = (): string | null => {
 };
 
 
-
+// Check if the current token is expired
 export const isTokenExpired = (): boolean => {
-   const token = accessToken || localStorage.getItem("access_token");
+   const token = accessToken;
   if (!token) return true;
 
   try {
     const decoded = jwtDecode<DecodedToken>(token);
-    return Date.now() / 1000 > decoded.exp;
+    return Date.now() / 1000 > decoded.exp; 
   } catch {
     return true;
   }
@@ -46,7 +50,7 @@ export const isTokenExpired = (): boolean => {
 
 
 export const isLoggedIn = () => {
-  return getCurrentUserId() !== null && !isTokenExpired();
+  return getCurrentUserId() !== null && !isTokenExpired(); 
 };
 
 

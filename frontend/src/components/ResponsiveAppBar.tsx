@@ -23,7 +23,12 @@ function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
   const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
   const { logout, isAuthenticated } = useAuth()
-  const { data: user } = useGetCurrentUser()
+  const { data: user } = useGetCurrentUser({
+    query: {
+      enabled: isAuthenticated,
+    },
+  });
+
 
   const pages = ['Dashboard', 'Notes', 'Folders'];
   const settings = isAuthenticated
@@ -160,7 +165,7 @@ function ResponsiveAppBar() {
           {isAuthenticated && user && (
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt={user?.first_name?.[0]} src="/static/images/avatar/2.jpg"  sx={{ bgcolor: '#ff77b2' }} />
+                <Avatar alt={user?.first_name?.[0]} src="/static/images/avatar/2.jpg" sx={{ bgcolor: '#ff77b2' }} />
               </IconButton>
             </Tooltip>
           )}
@@ -192,8 +197,7 @@ function ResponsiveAppBar() {
                     }
 
                     if (setting === 'Logout') {
-                      logout()
-                      router.navigate({ to: '/login', search: { redirect: '/' } })
+                      logout();
                     }
 
                   }}

@@ -3,13 +3,17 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios'
 import { clearAuth, getAccessToken, setAccessToken } from '../utils/auth';
 import { refreshToken } from './api-client';
 
-// Create a base Axios instance that points to your FastAPI backend
-export const AXIOS_INSTANCE = axios.create({ baseURL: 'http://localhost:8000/', withCredentials: true, })
+// Create a base Axios instance API calls
+export const AXIOS_INSTANCE = axios.create({ 
+  baseURL: 'http://localhost:8000/', 
+  withCredentials: true, // Send cookies
+})
 
-// Attach token to each request
+// Automatically attach the access token to every outgoing request
 AXIOS_INSTANCE.interceptors.request.use((config) => {
-  const token = getAccessToken();
+  const token = getAccessToken(); // Get access token from memory
   if (token && config.headers) {
+    // Add Authorization header if token exists
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -24,20 +28,23 @@ AXIOS_INSTANCE.interceptors.response.use(
 
     if (
       error.response?.status === 401 &&
-      !originalRequest._retry // prevent infinite loops
+      !originalRequest._retry && // prevent infinite loops
+      !originalRequest.url.includes('/auth/refresh')
     ) {
-      originalRequest._retry = true;
+      originalRequest._retry = true; // Mark the request as already retried
 
       try {
         const res = await refreshToken(); // sets cookie
-        const newAccessToken = res.access_token;
-        setAccessToken(newAccessToken);
+        const newAccessToken = res.access_token; // new token from response
+        setAccessToken(newAccessToken); // Save it in memory
 
+        // Retry original request with new token
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-        return AXIOS_INSTANCE(originalRequest);
+        return AXIOS_INSTANCE(originalRequest); // Retry the original request with the new token
       } catch (refreshError) {
         clearAuth(); // logout on failure
-        return Promise.reject(refreshError);
+        window.location.href = '/login'; // Full reload to clear all state
+        return Promise.reject(refreshError); // stop the retry here
       }
     }
 
@@ -45,12 +52,12 @@ AXIOS_INSTANCE.interceptors.response.use(
   }
 );
 
-
-// Orval mutator function
+ 
+// Orval mutator function to use this Axios instance
 export const customInstance = async <T>(config: AxiosRequestConfig): Promise<T> => {
   // Destructure and ignore `signal` to avoid issues
   const { signal, ...restConfig } = config
-  void signal
+  void signal 
 
   try {
     const response: AxiosResponse<T> = await AXIOS_INSTANCE(restConfig)
