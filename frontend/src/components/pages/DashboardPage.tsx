@@ -128,7 +128,7 @@ export default function DashboardPage() {
                       {note.title}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {note.content.slice(0, 50)}...
+                      {(note.content ?? '').slice(0, 50)}...
                     </Typography>
                   </CardContent>
                 </Card>

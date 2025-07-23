@@ -1,20 +1,20 @@
 import { Button, CircularProgress, Typography, Stack } from '@mui/material'
 import { Box } from '@mui/system'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import { useGetNote, useDeleteNote, useUpdateNote, useGetFolders } from '../../api/api-client'
 import NotFound from './NotFound'
 import NoteDialog from '../NoteDialog'
 import { useState } from 'react'
+import { useNotes, useSingleNote } from '../../hooks/useNotes'
+import { useFolders } from '../../hooks/useFolders'
 
 function NoteDetailPage() {
     const { noteId } = useParams({ from: '/_auth/note/$noteId' })
     const navigate = useNavigate()
 
-    const { data: note, isLoading, isError, refetch } = useGetNote(noteId)
-    const { data: folders, isLoading: foldersLoading, isError: foldersError } = useGetFolders()
-
-    const deleteNoteMutation = useDeleteNote()
-    const updateNoteMutation = useUpdateNote()
+    const { data: note, isLoading, isError, refetch } = useSingleNote(noteId)
+    const { deleteNoteMutation, updateNoteMutation} = useNotes();
+    const { foldersQuery } = useFolders();
+    const { data: folders, isLoading: foldersLoading, isError: foldersError } = foldersQuery;
 
     const [isDialogOpen, setDialogOpen] = useState(false)
 

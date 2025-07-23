@@ -1,32 +1,22 @@
 import { useParams, useRouter } from '@tanstack/react-router'
-import { useGetFolders, useGetNotes, useUpdateNote, useDeleteNote, type NoteOut } from '../../api/api-client'
+import { type NoteOut } from '../../api/api-client'
 import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import Grid from '@mui/material/Grid'
 import { Box, Typography, useTheme, CircularProgress } from '@mui/material';
 import NoteCard from '../NoteCard'
 import NoteDialog from '../NoteDialog';
+import { useFolders } from '../../hooks/useFolders';
+import { useNotes } from '../../hooks/useNotes';
 
 export default function FolderNotesPage() {
     const { palette } = useTheme();
     const { folderId } = useParams({ from: '/_auth/folder/$folderId' });
     const router = useRouter();
-    const queryClient = useQueryClient();
 
-    const { data: folders = [], isLoading: foldersLoading, isError: foldersError } = useGetFolders();
-    const { data: notes = [], isLoading, isError } = useGetNotes();
-
-    const updateNoteMutation = useUpdateNote({
-        mutation: {
-            onSuccess: () => queryClient.invalidateQueries({ queryKey: ['/api/v1/note/'] }),
-        },
-    });
-
-    const deleteNoteMutation = useDeleteNote({
-        mutation: {
-            onSuccess: () => queryClient.invalidateQueries({ queryKey: ['/api/v1/note/'] }),
-        },
-    });
+    const { foldersQuery } = useFolders();
+    const { data: folders = [], isLoading: foldersLoading, isError: foldersError } = foldersQuery;
+    const { notesQuery, updateNoteMutation, deleteNoteMutation } = useNotes();
+    const { data: notes = [], isLoading, isError } = notesQuery;
 
     const [noteToEdit, setNoteToEdit] = useState<NoteOut | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
