@@ -124,7 +124,10 @@ export default function NotesPage() {
         {(showStarredOnly ? sortedNotes.filter((note) => note.is_starred) : sortedNotes).map((note) => (
           <Grid key={note.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
             <NoteCard
-              note={note}
+              note={{
+                ...note,
+                content: note.content ?? '',
+              }}
               folderName={note.folder_id ? folderMap[note.folder_id] : undefined}
               onClick={() =>
                 router.navigate({ to: '/note/$noteId', params: { noteId: note.id } })
@@ -167,7 +170,14 @@ export default function NotesPage() {
         folders={folders}
         foldersLoading={foldersLoading}
         foldersError={foldersError}
-        initialData={noteToEdit}
+        initialData={
+          noteToEdit
+            ? {
+              ...noteToEdit,
+              content: noteToEdit.content ?? '',
+            }
+            : null
+        }
       />
     </Box>
   );
