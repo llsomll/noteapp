@@ -91,7 +91,12 @@ function NoteDetailPage() {
                 folders={folders}
                 foldersLoading={foldersLoading}
                 foldersError={foldersError}
-                initialData={note}
+                initialData={{
+                    id: note.id,
+                    title: note.title,
+                    content: note.content ?? '',
+                    folder_id: note.folder_id,
+                }}
             />
         </Box>
     )
