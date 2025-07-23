@@ -1,7 +1,7 @@
-import { useCreateFolder, useDeleteFolder, useUpdateFolder } from "../api/api-client";
+import { useCreateFolder, useDeleteFolder, useGetFolders, useUpdateFolder } from "../api/api-client";
 import { useQueryClient } from "@tanstack/react-query";
 
-export function useFolder() {
+export function useFolders() {
     const queryClient = useQueryClient();
 
     const createFolderMutation = useCreateFolder({
@@ -31,10 +31,13 @@ export function useFolder() {
         },
     });
 
+    const foldersQuery = useGetFolders();
+
     return { 
         createFolderMutation, 
         updateFolderMutation, 
-        deleteFolderMutation 
+        deleteFolderMutation,
+        foldersQuery
     };
 }
 

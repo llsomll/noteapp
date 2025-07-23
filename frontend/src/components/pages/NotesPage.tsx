@@ -3,26 +3,24 @@ import { Box, Typography, CircularProgress, useTheme, Switch, FormControlLabel }
 import Grid from '@mui/material/Grid';
 import Fab from '@mui/material/Fab';
 import AddIcon from '@mui/icons-material/Add';
-import { useQueryClient } from '@tanstack/react-query';
 import type { NoteOut } from '../../api/api-client/model';
-import { useGetNotes, useDeleteNote, useCreateNote, useUpdateNote } from '../../api/api-client/notes';
-import { useGetFolders } from '../../api/api-client';
 import NoteDialog from '../NoteDialog';
 import { useRouter } from '@tanstack/react-router'
 import NoteCard from '../NoteCard';
+import { useNotes } from '../../hooks/useNotes';
+import { useFolders } from '../../hooks/useFolders';
 
 export default function NotesPage() {
   const router = useRouter()
   const { palette } = useTheme()
-  const { data: notes, isLoading, isError } = useGetNotes();
   const [isDialogOpen, setDialogOpen] = useState(false);
   const [noteToEdit, setNoteToEdit] = useState<NoteOut | null>(null);
   const [showStarredOnly, setShowStarredOnly] = useState(false);
 
-
-  const queryClient = useQueryClient();
-
-  const { data: folders, isLoading: foldersLoading, isError: foldersError } = useGetFolders();
+  const { foldersQuery } = useFolders();
+  const { data: folders, isLoading: foldersLoading, isError: foldersError } = foldersQuery;
+  const { createNoteMutation, updateNoteMutation, deleteNoteMutation, notesQuery} = useNotes();
+  const { data: notes, isLoading, isError } = notesQuery;
 
   const folderMap = folders?.reduce((map, folder) => {
     map[folder.id] = folder.name;
@@ -30,38 +28,6 @@ export default function NotesPage() {
   }, {} as Record<string, string>) || {};
 
 
-  const deleteNoteMutation = useDeleteNote({
-    mutation: {
-      onSuccess: () => {
-        console.log('Deleted successfully');
-        queryClient.invalidateQueries({ queryKey: ['/api/v1/note/'] });
-      },
-    },
-  });
-
-  const createNoteMutation = useCreateNote({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['/api/v1/note/'] });
-        setDialogOpen(false);
-      },
-      onError: (error) => {
-        console.error('Failed to create note', error);
-      },
-    },
-  });
-
-  const updateNoteMutation = useUpdateNote({
-    mutation: {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['/api/v1/note/'] });
-        setDialogOpen(false);
-      },
-      onError: (error) => {
-        console.error('Failed to update note', error);
-      },
-    },
-  });
 
   const handleDelete = (noteId: string) => {
     deleteNoteMutation.mutate({ noteId });

@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Box, Typography, useTheme, Fab, IconButton } from '@mui/material'
 import { useNavigate } from '@tanstack/react-router'
 import { useGetFolders, useGetNotes } from '../../api/api-client'
-import { useFolder } from '../../hooks/useFolder';
+import { useFolders } from '../../hooks/useFolders';
 import FolderDialog from '../FolderDialog'
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -23,7 +23,7 @@ export default function FoldersPage() {
     } = useGetFolders();
     const { data: notes = [] } = useGetNotes();
 
-    const { createFolderMutation, updateFolderMutation, deleteFolderMutation } = useFolder();
+    const { createFolderMutation, updateFolderMutation, deleteFolderMutation } = useFolders();
 
     const colors = ['#FFAB91', '#FFF59D', '#C5CAE9', '#90CAF9', '#B2DFDB'];
     const bgColors = ['#FF7043', '#FDD835', '#7986CB', '#64B5F6', '#4DB6AC'];
